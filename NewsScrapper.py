@@ -14,8 +14,7 @@ from pymongo import MongoClient
 from newspaper import Article, build
 import feedparser as fp
 import constants
-from classifier import Classifiers
-
+from classifier import Classifier
 
 logging.basicConfig(filename=constants.LOG_FILENAME,
                     format='%(asctime)s-%(levelname)s-%(message)s',
@@ -53,7 +52,8 @@ def scrape_news():
 
     # Assign database
     db = client.test
-or company, info in companies.items():
+
+    for company, info in companies.items():
         # If a RSS link is provided in the JSON file,
         # this will be the first choice.
         # Reason for this is that,
@@ -70,8 +70,9 @@ or company, info in companies.items():
 
     start_classification()
 
-    def parse_link(company, info, db):
-      article_link = info['link']
+
+def parse_link(company, info, db):
+    article_link = info['link']
     paper = build(article_link, language='es')
     none_type_count = 0
     article_count = 0
