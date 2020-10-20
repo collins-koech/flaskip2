@@ -24,3 +24,32 @@ logging.basicConfig(filename=constants.LOG_FILENAME,
 # TODO: Assign timezones accordingly to the region (e.g. Jalisco)
 # TODO: Create a temp dict to use when losing connection to the db
 # TODO: Create index from the data to prevent repeated registers (db.profiles.create_index())
+
+
+def try_to_get_utc(date, link):
+    try:
+        return datetime.utcfromtimestamp(mktime(date))
+    except Exception:
+        logging.warning(
+            'Could not get UTC time from {}'.format(link), exc_info=True)
+        return date
+
+
+def log_invalid_text(link):
+    logging.warning('Ignoring {} due to invalid body.'.format(link))
+
+
+def start_classification():
+    Classifier()
+
+
+def scrape_news():
+    # Loads the JSON file with news sites
+    with open(constants.NEWSPAPERS_PATH) as newspapers_file:
+        companies = json.load(newspapers_file)
+
+    # Initialize database connection
+    client = MongoClient()
+
+    # Assign database
+    db = client.test
