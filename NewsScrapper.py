@@ -76,4 +76,42 @@ or company, info in companies.items():
     none_type_count = 0
     article_count = 0
     for article in paper.articles:
+        if article_count > constants.ARTICLES_TO_DOWNLOAD:
+            break
+        try:
+            article.download()
+            article.parse()
+        except Exception:
+            logging.warning('Could not download/parse {}'.format(article_link),
+                            exc_info=True)
+            continue
+        # Again, for consistency, if there is no found publish date
+        # the article will be skipped.
+        # After 10 downloaded articles from the same newspaper
+        # without publish date, the company will be skipped.
+        if article.publish_date is None:
+            none_type_count += 1
+            if none_type_count > 10:
+                logging.warning(
+                    'Skipping {} because of too many noneType dates...'.format(
+                        company))
+                break
+            article_count += 1
+            continue
+        article_text = article.text
+        article_url = article.url
+        if not article_text:
+            log_invalid_text(article_url)
+            continue
+        db.test.insert_one({
+            constants.NEWSPAPER: company,
+            constants.TITLE: article.title,
+            constants.TEXT: article_text,
+            constants.TAGS: list(article.tags),
+            constants.LINK: article_url,
+            constants.PUB_DATE: article.publish_date,
+            constants.EXTRACT_DATE: datetime.utcnow(),
+            constants.HAS_BEEN_CLASSIFIED: False,
+            constants.IS_VIOLENT: None
+        })
 
