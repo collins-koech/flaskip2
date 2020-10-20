@@ -70,3 +70,10 @@ or company, info in companies.items():
 
     start_classification()
 
+    def parse_link(company, info, db):
+      article_link = info['link']
+    paper = build(article_link, language='es')
+    none_type_count = 0
+    article_count = 0
+    for article in paper.articles:
+
