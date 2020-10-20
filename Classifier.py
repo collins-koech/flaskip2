@@ -70,3 +70,13 @@ class Classifier(Thread):
                 < prediction[0][constants.VIOLENT_CLASS_ID]:
             return True
         return False
+    
+
+def deserialize(filename):
+    """
+    Loads object from file.
+    :param filename: name of the file where the object was serialized.
+    :return: object deserialized.
+    """
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
