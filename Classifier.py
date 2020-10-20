@@ -46,3 +46,27 @@ class Classifier(Thread):
                 }
             )
         self._client.close()
+    def set_stop_words(self):
+        with open('stopwords-es.txt', encoding="utf-8") as f:
+            setattr(self._vectorizer, 'stop_words', f.read().splitlines())
+
+    def text_to_tokens(self, text):
+        """
+        Transform a given list of texts to a matrix of token counts.
+        :param text: list of texts to be converted.
+        :return: matrix of token counts.
+        """
+        return self._vectorizer.transform(text)
+
+    def is_violent(self, transformed_text):
+        """
+        Asks to the classifier if the received text is related to violence.
+        :param transformed_text: token counts matrix
+            to determine if it's violent.
+        :return: if the text is violent or not.
+        """
+        prediction = self._classifier.predict_proba(transformed_text)
+        if prediction[0][constants.NON_VIOLENT_CLASS_ID] \
+                < prediction[0][constants.VIOLENT_CLASS_ID]:
+            return True
+        return False
