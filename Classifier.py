@@ -24,3 +24,25 @@ class Classifier(Thread):
         self._db = self._client['test']
         self.set_stop_words()
         self.start()
+
+     def run(self):
+        """
+        Finds news that haven't been classified and updates info in database.
+        Info updated:
+        * is_classified -> set to True.
+        * is_violent -> asks to the classifier if the news content
+            was found as violent or not.
+        """
+        for article in self._db.test.find({constants.HAS_BEEN_CLASSIFIED: False}):
+            self._db.test.update_one(
+                {constants.MONGO_ID: ObjectId(article[constants.MONGO_ID])},
+                {
+                    "$set": {
+                        constants.HAS_BEEN_CLASSIFIED: True,
+                        constants.IS_VIOLENT: self.is_violent(
+                            self.text_to_tokens(
+                                [article[constants.TEXT]]))
+                    }
+                }
+            )
+        self._client.close()
