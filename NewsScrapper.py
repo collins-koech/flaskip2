@@ -53,3 +53,20 @@ def scrape_news():
 
     # Assign database
     db = client.test
+or company, info in companies.items():
+        # If a RSS link is provided in the JSON file,
+        # this will be the first choice.
+        # Reason for this is that,
+        # RSS feeds often give more consistent and correct data.
+        # If you do not want to scrape from the RSS-feed,
+        # just leave the RSS attr empty in the JSON file.
+        if 'rss' in info:
+            parse_rss(company, info, db)
+        else:
+            parse_link(company, info, db)
+
+    # Close DB connection
+    client.close()
+
+    start_classification()
+
