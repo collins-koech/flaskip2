@@ -115,3 +115,42 @@ or company, info in companies.items():
             constants.IS_VIOLENT: None
         })
 
+
+def parse_rss(company, info, db):
+    parsed_dict = fp.parse(info['rss'])
+    article_count = 0
+    for entry in parsed_dict.entries:
+        # Check if publish date is provided, if no the article is skipped.
+        # This is done to keep consistency in the data
+        # and to keep the script from crashing.
+        if not hasattr(entry, 'published'):
+            continue
+        if article_count > constants.ARTICLES_TO_DOWNLOAD:
+            break
+        article_link = entry.link
+        try:
+            article = Article(article_link, fetch_images=False)
+            article.download()
+            article.parse()
+        except Exception:
+            # If the download for some reason fails (ex. 404)
+            # the script will continue downloading the next article.
+            logging.warning('Could not download/parse {}'.format(article_link),
+                            exc_info=True)
+            continue
+        article_text = article.text
+        if not article_text:
+            log_invalid_text(article_link)
+            continue
+        db.test.insert_one({
+            constants.NEWSPAPER: company,
+            constants.TITLE: article.title,
+            constants.TEXT: article_text,
+            constants.TAGS: list(article.tags),
+            constants.LINK: article_link,
+            constants.PUB_DATE: try_to_get_utc(entry.published_parsed,
+                                               article_link),
+            constants.EXTRACT_DATE: datetime.utcnow(),
+            constants.HAS_BEEN_CLASSIFIED: False,
+            constants.IS_VIOLENT: None
+        })
